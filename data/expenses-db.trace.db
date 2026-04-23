@@ -1,3 +1,0 @@
-2026-04-15 22:05:11.494511-03:00 jdbc[13]: exception
-org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "[*]=TB_CATEGORIES"; SQL statement:
-=TB_CATEGORIES [42000-240]

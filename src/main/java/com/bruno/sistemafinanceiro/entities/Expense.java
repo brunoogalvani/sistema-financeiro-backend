@@ -3,6 +3,7 @@ package com.bruno.sistemafinanceiro.entities;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -18,18 +19,23 @@ public class Expense {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Setter
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @Setter
     private String name;
 
+    @Setter
     @Column(precision = 10, scale = 2)
     private BigDecimal price;
 
+    @Setter
     @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
+    @Setter
     private LocalDate date;
 }
