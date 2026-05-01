@@ -1,5 +1,6 @@
 package com.bruno.sistemafinanceiro.services;
 
+import com.bruno.sistemafinanceiro.commons.exceptions.ResourceNotFoundException;
 import com.bruno.sistemafinanceiro.dto.requests.ExpenseRequestDTO;
 import com.bruno.sistemafinanceiro.dto.responses.ExpenseResponseDTO;
 import com.bruno.sistemafinanceiro.entities.Category;
@@ -23,11 +24,11 @@ public class ExpenseService {
     private final CategoryRepository categoryRepository;
 
     public ExpenseResponseDTO create(ExpenseRequestDTO dto, UUID userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        User user = userRepository.getReferenceById(userId);
 
         Category category = categoryRepository.findByIdAndUserId(dto.categoryId(), userId)
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
         Expense expense = new Expense();
         expense.setName(dto.name());
@@ -50,7 +51,7 @@ public class ExpenseService {
 
     private ExpenseResponseDTO toResponseDTO(Expense expense) {
 
-        String categoryName = (expense.getCategory() != null) ? expense.getCategory().getName() : null;
+        String categoryName = expense.getCategory().getName();
 
         return new ExpenseResponseDTO(expense.getId(), expense.getName(), expense.getPrice(), categoryName, expense.getDate());
     }

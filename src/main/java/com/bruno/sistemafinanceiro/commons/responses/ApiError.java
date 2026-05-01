@@ -1,8 +1,8 @@
 package com.bruno.sistemafinanceiro.commons.responses;
 
-public record ApiResponse<T>(
+public record ApiError(
         boolean success,
-        String message,
-        T data
+        String error,
+        String message
 ) {
 }

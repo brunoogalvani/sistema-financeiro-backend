@@ -14,6 +14,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/categories")
@@ -34,13 +35,38 @@ public class CategoryController {
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<Category>> createCategory(
+    public ResponseEntity<ApiResponse<CategoryResponseDTO>> createCategory(
             @Valid @RequestBody CategoryRequestDTO dto,
             @AuthenticationPrincipal JWTUserData user
     ) {
         Category category = categoryService.create(dto.name(), user.userId());
         return ResponseEntity.status(HttpStatus.CREATED).body(
-                new ApiResponse<>(true, "Category created successfully", category)
+                new ApiResponse<>(true, "Category created successfully", new CategoryResponseDTO(category.getId(), category.getName()))
+        );
+    }
+
+    @PatchMapping("/{categoryId}")
+    public ResponseEntity<ApiResponse<CategoryResponseDTO>> updateCategory(
+            @PathVariable UUID categoryId,
+            @Valid @RequestBody CategoryRequestDTO dto,
+            @AuthenticationPrincipal JWTUserData user
+    ) {
+
+        Category category = categoryService.update(categoryId, dto.name(), user.userId());
+
+        return ResponseEntity.ok(
+                new ApiResponse<>(true, "Category updated successfully", new CategoryResponseDTO(category.getId(), category.getName()))
+        );
+    }
+
+    @DeleteMapping("/{categoryId}")
+    public ResponseEntity<ApiResponse<Category>> deleteCategory(
+            @PathVariable UUID categoryId,
+            @AuthenticationPrincipal JWTUserData user
+    ) {
+        categoryService.delete(categoryId, user.userId());
+        return ResponseEntity.ok(
+                new ApiResponse<>(true, "Category deleted successfully", null)
         );
     }
 }
