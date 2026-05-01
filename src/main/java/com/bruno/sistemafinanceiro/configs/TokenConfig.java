@@ -5,11 +5,13 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.bruno.sistemafinanceiro.entities.User;
+import com.bruno.sistemafinanceiro.entities.UserRole;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.util.Optional;
+import java.util.UUID;
 
 @Component
 public class TokenConfig {
@@ -39,8 +41,9 @@ public class TokenConfig {
                     .build().verify(token);
 
             return Optional.of(JWTUserData.builder()
-                    .userId(decode.getClaim("userid").asLong())
+                    .userId(UUID.fromString(decode.getClaim("userid").asString()))
                     .username(decode.getSubject())
+                    .role(UserRole.valueOf(decode.getClaim("role").asString()))
                     .build());
         } catch (JWTVerificationException ex) {
             return Optional.empty();

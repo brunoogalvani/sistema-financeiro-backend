@@ -1,11 +1,15 @@
 package com.bruno.sistemafinanceiro.controllers;
 
+import com.bruno.sistemafinanceiro.commons.responses.ApiResponse;
+import com.bruno.sistemafinanceiro.configs.JWTUserData;
 import com.bruno.sistemafinanceiro.dto.requests.ExpenseRequestDTO;
 import com.bruno.sistemafinanceiro.dto.responses.ExpenseResponseDTO;
 import com.bruno.sistemafinanceiro.services.ExpenseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,15 +22,19 @@ public class ExpenseController {
 
     private final ExpenseService expenseService;
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<List<ExpenseResponseDTO>> getExpenseByUser(@PathVariable UUID userId) {
-        List<ExpenseResponseDTO> expenses = expenseService.findByUser(userId);
-        return ResponseEntity.ok(expenses);
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<ExpenseResponseDTO>>> getExpenses(@AuthenticationPrincipal JWTUserData user) {
+        List<ExpenseResponseDTO> expenses = expenseService.findByUser(user.userId());
+        return ResponseEntity.ok(
+                new ApiResponse<>(true, "Expenses retrieved successfully", expenses)
+        );
     }
 
     @PostMapping
-    public ResponseEntity<ExpenseResponseDTO> createExpense(@RequestBody ExpenseRequestDTO dto) {
+    public ResponseEntity<ApiResponse<ExpenseResponseDTO>> createExpense(@RequestBody ExpenseRequestDTO dto) {
         ExpenseResponseDTO expense = expenseService.create(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(expense);
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                new ApiResponse<>(true, "Expense created successfully", expense)
+        );
     }
 }

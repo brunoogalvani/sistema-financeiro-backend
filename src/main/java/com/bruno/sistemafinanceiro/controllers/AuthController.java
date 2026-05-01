@@ -1,5 +1,6 @@
 package com.bruno.sistemafinanceiro.controllers;
 
+import com.bruno.sistemafinanceiro.commons.responses.ApiResponse;
 import com.bruno.sistemafinanceiro.configs.TokenConfig;
 import com.bruno.sistemafinanceiro.dto.requests.LoginRequest;
 import com.bruno.sistemafinanceiro.dto.requests.RegisterUserRequest;
@@ -29,18 +30,22 @@ public class AuthController {
     private final TokenConfig tokenConfig;
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<ApiResponse<LoginResponse>> login(@Valid @RequestBody LoginRequest request) {
         UsernamePasswordAuthenticationToken userAndPass = new UsernamePasswordAuthenticationToken(request.username(), request.password());
         Authentication authentication = authenticationManager.authenticate(userAndPass);
 
         User user = (User) authentication.getPrincipal();
-        String token = tokenConfig.generateToken(user);
-        return ResponseEntity.ok(new LoginResponse(token));
+        LoginResponse token = new LoginResponse(tokenConfig.generateToken(user));
+        return ResponseEntity.ok(
+                new ApiResponse<>(true, "Authentication successful", token)
+        );
     }
 
     @PostMapping("/register")
-    public ResponseEntity<RegisterUserResponse> register(@Valid @RequestBody RegisterUserRequest request) {
+    public ResponseEntity<ApiResponse<RegisterUserResponse>> register(@Valid @RequestBody RegisterUserRequest request) {
         RegisterUserResponse created = authService.create(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                new ApiResponse<>(true, "User registered successfully", created)
+        );
     }
 }
