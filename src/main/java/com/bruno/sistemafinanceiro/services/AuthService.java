@@ -1,9 +1,11 @@
 package com.bruno.sistemafinanceiro.services;
 
-import com.bruno.sistemafinanceiro.dto.requests.RegisterUserRequest;
-import com.bruno.sistemafinanceiro.dto.responses.RegisterUserResponse;
+import com.bruno.sistemafinanceiro.dto.requests.RegisterUserRequestDTO;
+import com.bruno.sistemafinanceiro.dto.responses.RegisterUserResponseDTO;
+import com.bruno.sistemafinanceiro.entities.Category;
 import com.bruno.sistemafinanceiro.entities.User;
 import com.bruno.sistemafinanceiro.entities.UserRole;
+import com.bruno.sistemafinanceiro.repositories.CategoryRepository;
 import com.bruno.sistemafinanceiro.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,15 +15,17 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class AuthService implements UserDetailsService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final CategoryRepository categoryRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public RegisterUserResponse create(RegisterUserRequest request) {
+    public RegisterUserResponseDTO create(RegisterUserRequestDTO request) {
 
         User user = new User();
         user.setName(request.name());
@@ -31,11 +35,30 @@ public class AuthService implements UserDetailsService {
 
         User saved = userRepository.save(user);
 
+        createDefaultCategories(saved);
+
         return toRegisterResponseDTO(saved);
     }
 
-    private RegisterUserResponse toRegisterResponseDTO(User dto) {
-        return new RegisterUserResponse(dto.getId(), dto.getName(), dto.getUsername(), dto.getRole());
+    private RegisterUserResponseDTO toRegisterResponseDTO(User dto) {
+        return new RegisterUserResponseDTO(dto.getId(), dto.getName(), dto.getUsername(), dto.getRole());
+    }
+
+    private void createDefaultCategories(User user) {
+
+        List<String> defaultCategories = List.of(
+                "Alimentação",
+                "Transporte",
+                "Moradia",
+                "Lazer"
+        );
+
+        defaultCategories.forEach(name -> {
+            Category c = new Category();
+            c.setName(name);
+            c.setUser(user);
+            categoryRepository.save(c);
+        });
     }
 
     @Override

@@ -31,8 +31,11 @@ public class ExpenseController {
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<ExpenseResponseDTO>> createExpense(@RequestBody ExpenseRequestDTO dto) {
-        ExpenseResponseDTO expense = expenseService.create(dto);
+    public ResponseEntity<ApiResponse<ExpenseResponseDTO>> createExpense(
+            @RequestBody ExpenseRequestDTO dto,
+            @AuthenticationPrincipal JWTUserData user
+    ) {
+        ExpenseResponseDTO expense = expenseService.create(dto, user.userId());
         return ResponseEntity.status(HttpStatus.CREATED).body(
                 new ApiResponse<>(true, "Expense created successfully", expense)
         );

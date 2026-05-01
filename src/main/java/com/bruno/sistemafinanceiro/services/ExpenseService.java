@@ -22,11 +22,11 @@ public class ExpenseService {
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
 
-    public ExpenseResponseDTO create(ExpenseRequestDTO dto) {
-        User user = userRepository.findById(dto.userId())
+    public ExpenseResponseDTO create(ExpenseRequestDTO dto, UUID userId) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        Category category = categoryRepository.findByIdAndUserId(dto.categoryId(), dto.userId())
+        Category category = categoryRepository.findByIdAndUserId(dto.categoryId(), userId)
                 .orElseThrow(() -> new RuntimeException("Category not found"));
 
         Expense expense = new Expense();
