@@ -2,7 +2,8 @@ package com.bruno.sistemafinanceiro.controllers;
 
 import com.bruno.sistemafinanceiro.commons.responses.ApiResponse;
 import com.bruno.sistemafinanceiro.configs.JWTUserData;
-import com.bruno.sistemafinanceiro.dto.requests.UpdateUserRequestDTO;
+import com.bruno.sistemafinanceiro.dto.requests.AdminUpdateUserRequestDTO;
+import com.bruno.sistemafinanceiro.dto.requests.UpdateMyUserRequestDTO;
 import com.bruno.sistemafinanceiro.dto.responses.UserResponseDTO;
 import com.bruno.sistemafinanceiro.services.UserService;
 import jakarta.validation.Valid;
@@ -13,6 +14,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/users")
@@ -30,6 +32,27 @@ public class UserController {
         );
     }
 
+    @PatchMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<UserResponseDTO>> updateUser(@Valid @RequestBody AdminUpdateUserRequestDTO dto) {
+        UserResponseDTO updated = userService.adminUpdateUser(dto);
+
+        return ResponseEntity.ok(
+                new ApiResponse<>(true, "User updated successfully", updated)
+        );
+    }
+
+    @DeleteMapping("/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<UserResponseDTO>> deleteUser(@PathVariable UUID userId) {
+
+        userService.deleteUser(userId);
+        return ResponseEntity.ok(
+                new ApiResponse<>(true, "User deleted successfully", null)
+        );
+    }
+
+
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<UserResponseDTO>> getMe(@AuthenticationPrincipal JWTUserData user) {
 
@@ -42,7 +65,7 @@ public class UserController {
 
     @PatchMapping("/me")
     public ResponseEntity<ApiResponse<UserResponseDTO>> updateMe(
-            @Valid @RequestBody UpdateUserRequestDTO dto,
+            @Valid @RequestBody UpdateMyUserRequestDTO dto,
             @AuthenticationPrincipal JWTUserData user
     ) {
 
@@ -55,7 +78,7 @@ public class UserController {
     @DeleteMapping("/me")
     public ResponseEntity<ApiResponse<UserResponseDTO>> deleteMe(@AuthenticationPrincipal JWTUserData user) {
 
-        userService.deleteCurrentUser(user.userId());
+        userService.deleteUser(user.userId());
         return ResponseEntity.ok(
                 new ApiResponse<>(true, "User deleted successfully", null)
         );

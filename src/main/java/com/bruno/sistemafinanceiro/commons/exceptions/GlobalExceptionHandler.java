@@ -1,6 +1,7 @@
 package com.bruno.sistemafinanceiro.commons.exceptions;
 
 import com.bruno.sistemafinanceiro.commons.responses.ApiError;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -53,10 +54,9 @@ public class GlobalExceptionHandler {
         );
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiError> handleGeneric(Exception ex) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                new ApiError(false, "Internal Server Error", "Unexpected error")
-        );
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiError> handleDuplicate(DataIntegrityViolationException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new ApiError(false, "Conflict", "Username already exists"));
     }
 }

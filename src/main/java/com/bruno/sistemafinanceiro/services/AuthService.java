@@ -1,5 +1,6 @@
 package com.bruno.sistemafinanceiro.services;
 
+import com.bruno.sistemafinanceiro.commons.exceptions.ConflictException;
 import com.bruno.sistemafinanceiro.dto.requests.RegisterUserRequestDTO;
 import com.bruno.sistemafinanceiro.dto.responses.RegisterUserResponseDTO;
 import com.bruno.sistemafinanceiro.entities.Category;
@@ -8,6 +9,7 @@ import com.bruno.sistemafinanceiro.entities.UserRole;
 import com.bruno.sistemafinanceiro.repositories.CategoryRepository;
 import com.bruno.sistemafinanceiro.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;

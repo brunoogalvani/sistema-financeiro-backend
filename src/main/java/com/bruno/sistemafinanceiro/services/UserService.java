@@ -1,9 +1,9 @@
 package com.bruno.sistemafinanceiro.services;
 
 import com.bruno.sistemafinanceiro.commons.exceptions.ResourceNotFoundException;
-import com.bruno.sistemafinanceiro.dto.requests.UpdateUserRequestDTO;
+import com.bruno.sistemafinanceiro.dto.requests.AdminUpdateUserRequestDTO;
+import com.bruno.sistemafinanceiro.dto.requests.UpdateMyUserRequestDTO;
 import com.bruno.sistemafinanceiro.dto.responses.UserResponseDTO;
-import com.bruno.sistemafinanceiro.entities.Category;
 import com.bruno.sistemafinanceiro.entities.User;
 import com.bruno.sistemafinanceiro.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +23,7 @@ public class UserService {
     public List<UserResponseDTO> findAll() {
         return userRepository.findAll()
                 .stream()
+                .filter(user -> !user.isDeleted())
                 .map(this::toResponseDTO)
                 .toList();
     }
@@ -34,7 +35,21 @@ public class UserService {
         return toResponseDTO(user);
     }
 
-    public UserResponseDTO updateCurrentUser(UpdateUserRequestDTO dto, UUID userId) {
+    public UserResponseDTO adminUpdateUser(AdminUpdateUserRequestDTO dto) {
+        User user = userRepository.findById(dto.userId())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        if (dto.name() != null) user.setName(dto.name());
+        if (dto.username() != null) user.setUsername(dto.username());
+        if (dto.role() != null) user.setRole(dto.role());
+        if (dto.password() != null) user.setPassword(passwordEncoder.encode(dto.password()));
+
+        userRepository.save(user);
+
+        return toResponseDTO(user);
+    }
+
+    public UserResponseDTO updateCurrentUser(UpdateMyUserRequestDTO dto, UUID userId) {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -48,7 +63,7 @@ public class UserService {
         return toResponseDTO(user);
     }
 
-    public void deleteCurrentUser(UUID userId) {
+    public void deleteUser(UUID userId) {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
