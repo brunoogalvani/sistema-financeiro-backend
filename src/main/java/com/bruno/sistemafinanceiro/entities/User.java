@@ -36,6 +36,10 @@ public class User implements UserDetails {
     @Setter
     private String password;
 
+    @Setter
+    @Column(nullable = true)
+    private boolean deleted = false;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         if (this.role == UserRole.ADMIN) return List.of(new SimpleGrantedAuthority("ROLE_ADMIN"), new SimpleGrantedAuthority("ROLE_USER"));
@@ -62,7 +66,7 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return !this.deleted;
 //        return UserDetails.super.isEnabled();
     }
 }
