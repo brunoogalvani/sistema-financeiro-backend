@@ -38,16 +38,6 @@ public class CategoryService {
         return categoryRepository.save(category);
     }
 
-    public void delete(UUID categoryId, UUID userId) {
-
-        Category category = categoryRepository.findByIdAndUserId(categoryId, userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
-
-        if (expenseRepository.existsByCategoryId(categoryId)) throw new ConflictException("Category is being used");
-
-        categoryRepository.delete(category);
-    }
-
     public Category update(UUID categoryId, String name, UUID userId) {
 
         Category category = categoryRepository.findByIdAndUserId(categoryId, userId)
@@ -61,5 +51,15 @@ public class CategoryService {
         category.setName(name.trim());
 
         return categoryRepository.save(category);
+    }
+
+    public void delete(UUID categoryId, UUID userId) {
+
+        Category category = categoryRepository.findByIdAndUserId(categoryId, userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+
+        if (expenseRepository.existsByCategoryId(categoryId)) throw new ConflictException("Category is being used");
+
+        categoryRepository.delete(category);
     }
 }

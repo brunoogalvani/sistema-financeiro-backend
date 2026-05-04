@@ -26,6 +26,7 @@ public class UserController {
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<List<UserResponseDTO>>> getUsers() {
+
         List<UserResponseDTO> users = userService.findAll();
         return ResponseEntity.ok(
                 new ApiResponse<>(true, "Users retrieved successfully", users)
@@ -34,9 +35,9 @@ public class UserController {
 
     @PatchMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<UserResponseDTO>> updateUser(@Valid @RequestBody AdminUpdateUserRequestDTO dto) {
-        UserResponseDTO updated = userService.adminUpdateUser(dto);
+    public ResponseEntity<ApiResponse<UserResponseDTO>> updateUser(@RequestBody AdminUpdateUserRequestDTO dto) {
 
+        UserResponseDTO updated = userService.adminUpdateUser(dto);
         return ResponseEntity.ok(
                 new ApiResponse<>(true, "User updated successfully", updated)
         );
@@ -57,7 +58,6 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserResponseDTO>> getMe(@AuthenticationPrincipal JWTUserData user) {
 
         UserResponseDTO me = userService.findById(user.userId());
-
         return ResponseEntity.ok(
                 new ApiResponse<>(true, "User retrieved successfully", me)
         );
@@ -65,7 +65,7 @@ public class UserController {
 
     @PatchMapping("/me")
     public ResponseEntity<ApiResponse<UserResponseDTO>> updateMe(
-            @Valid @RequestBody UpdateMyUserRequestDTO dto,
+            @RequestBody UpdateMyUserRequestDTO dto,
             @AuthenticationPrincipal JWTUserData user
     ) {
 

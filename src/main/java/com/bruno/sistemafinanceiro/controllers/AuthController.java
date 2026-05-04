@@ -33,11 +33,13 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponseDTO>> login(@Valid @RequestBody LoginRequestDTO request) {
+
         UsernamePasswordAuthenticationToken userAndPass = new UsernamePasswordAuthenticationToken(request.username(), request.password());
         Authentication authentication = authenticationManager.authenticate(userAndPass);
 
         User user = (User) authentication.getPrincipal();
         LoginResponseDTO token = new LoginResponseDTO(tokenConfig.generateToken(user));
+
         return ResponseEntity.ok(
                 new ApiResponse<>(true, "Authentication successful", token)
         );
@@ -45,8 +47,8 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<RegisterUserResponseDTO>> register(@Valid @RequestBody RegisterUserRequestDTO request) {
-        RegisterUserResponseDTO created = authService.create(request);
 
+        RegisterUserResponseDTO created = authService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(
                 new ApiResponse<>(true, "User registered successfully", created)
         );

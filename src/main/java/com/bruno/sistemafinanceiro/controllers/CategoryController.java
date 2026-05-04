@@ -25,6 +25,7 @@ public class CategoryController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<CategoryResponseDTO>>> getCategories(@AuthenticationPrincipal JWTUserData user) {
+
         List<Category> categories = categoryService.findByUser(user.userId());
         return ResponseEntity.ok(
                 new ApiResponse<>(true, "Categories retrieved successfully", categories.stream()
@@ -39,6 +40,7 @@ public class CategoryController {
             @Valid @RequestBody CategoryRequestDTO dto,
             @AuthenticationPrincipal JWTUserData user
     ) {
+
         Category category = categoryService.create(dto.name(), user.userId());
         return ResponseEntity.status(HttpStatus.CREATED).body(
                 new ApiResponse<>(true, "Category created successfully", new CategoryResponseDTO(category.getId(), category.getName()))
@@ -53,7 +55,6 @@ public class CategoryController {
     ) {
 
         Category category = categoryService.update(categoryId, dto.name(), user.userId());
-
         return ResponseEntity.ok(
                 new ApiResponse<>(true, "Category updated successfully", new CategoryResponseDTO(category.getId(), category.getName()))
         );
@@ -64,6 +65,7 @@ public class CategoryController {
             @PathVariable UUID categoryId,
             @AuthenticationPrincipal JWTUserData user
     ) {
+
         categoryService.delete(categoryId, user.userId());
         return ResponseEntity.ok(
                 new ApiResponse<>(true, "Category deleted successfully", null)

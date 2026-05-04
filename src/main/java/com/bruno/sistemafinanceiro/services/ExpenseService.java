@@ -23,9 +23,17 @@ public class ExpenseService {
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
 
+    public List<ExpenseResponseDTO> findByUser(UUID userId) {
+        return expenseRepository.findByUserId(userId)
+                .stream()
+                .map(this::toResponseDTO)
+                .toList();
+    }
+
     public ExpenseResponseDTO create(ExpenseRequestDTO dto, UUID userId) {
 
-        User user = userRepository.getReferenceById(userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Category category = categoryRepository.findByIdAndUserId(dto.categoryId(), userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
@@ -42,11 +50,32 @@ public class ExpenseService {
         return toResponseDTO(saved);
     }
 
-    public List<ExpenseResponseDTO> findByUser(UUID userId) {
-        return expenseRepository.findByUserId(userId)
-                .stream()
-                .map(this::toResponseDTO)
-                .toList();
+    public ExpenseResponseDTO update(UUID expenseId, ExpenseRequestDTO dto, UUID userId) {
+
+        Expense expense = expenseRepository.findByIdAndUserId(expenseId, userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Expense not found"));
+
+        if (dto.name() != null) expense.setName(dto.name());
+        if (dto.price() != null) expense.setPrice(dto.price());
+        if (dto.categoryId() != null) {
+            Category category = categoryRepository.findByIdAndUserId(dto.categoryId(), userId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+
+            expense.setCategory(category);
+        }
+        if(dto.date() != null) expense.setDate(dto.date());
+
+        Expense updated = expenseRepository.save(expense);
+
+        return toResponseDTO(updated);
+    }
+
+    public void delete(UUID expenseId, UUID userId) {
+
+        Expense expense = expenseRepository.findByIdAndUserId(expenseId, userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Expense not found"));
+
+        expenseRepository.delete(expense);
     }
 
     private ExpenseResponseDTO toResponseDTO(Expense expense) {
