@@ -37,7 +37,6 @@ public class User implements UserDetails {
     private String password;
 
     @Setter
-    @Column(nullable = true)
     private boolean deleted = false;
 
     @Override

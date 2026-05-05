@@ -45,14 +45,13 @@ public class UserController {
 
     @DeleteMapping("/{userId}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<UserResponseDTO>> deleteUser(@PathVariable UUID userId) {
+    public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable UUID userId) {
 
         userService.deleteUser(userId);
         return ResponseEntity.ok(
                 new ApiResponse<>(true, "User deleted successfully", null)
         );
     }
-
 
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<UserResponseDTO>> getMe(@AuthenticationPrincipal JWTUserData user) {
@@ -76,7 +75,7 @@ public class UserController {
     }
 
     @DeleteMapping("/me")
-    public ResponseEntity<ApiResponse<UserResponseDTO>> deleteMe(@AuthenticationPrincipal JWTUserData user) {
+    public ResponseEntity<ApiResponse<Void>> deleteMe(@AuthenticationPrincipal JWTUserData user) {
 
         userService.deleteUser(user.userId());
         return ResponseEntity.ok(

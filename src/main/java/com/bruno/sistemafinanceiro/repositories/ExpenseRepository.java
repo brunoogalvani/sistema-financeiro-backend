@@ -22,6 +22,10 @@ public interface ExpenseRepository extends JpaRepository<Expense, UUID> {
     """)
     List<Object[]> findAvailableMonths(UUID userId);
 
+    List<Expense> findByInstallmentGroupIdAndUserId(UUID groupId, UUID userId);
+
+    void deleteByInstallmentGroupIdAndUserId(UUID groupId, UUID userId);
+
     Optional<Expense> findByIdAndUserId(UUID expenseId, UUID userId);
 
     boolean existsByCategoryId(UUID categoryId);

@@ -38,4 +38,16 @@ public class Expense {
 
     @Setter
     private LocalDate date;
+
+    @Setter
+    @Column(nullable = true)
+    private UUID installmentGroupId;
+
+    @Setter
+    @Column(nullable = true)
+    private Integer installmentNumber;
+
+    @Setter
+    @Column(nullable = true)
+    private Integer totalInstallments;
 }

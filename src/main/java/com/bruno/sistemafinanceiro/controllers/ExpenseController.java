@@ -4,7 +4,9 @@ import com.bruno.sistemafinanceiro.commons.responses.ApiResponse;
 import com.bruno.sistemafinanceiro.configs.JWTUserData;
 import com.bruno.sistemafinanceiro.dto.requests.ExpenseRequestDTO;
 import com.bruno.sistemafinanceiro.dto.YearMonthDTO;
+import com.bruno.sistemafinanceiro.dto.requests.InstallmentExpenseRequestDTO;
 import com.bruno.sistemafinanceiro.dto.responses.ExpenseResponseDTO;
+import com.bruno.sistemafinanceiro.dto.responses.InstallmentExpenseResponseDTO;
 import com.bruno.sistemafinanceiro.services.ExpenseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -66,7 +68,7 @@ public class ExpenseController {
     }
 
     @DeleteMapping("/{expenseId}")
-    public ResponseEntity<ApiResponse<ExpenseResponseDTO>> deleteExpense(
+    public ResponseEntity<ApiResponse<Void>> deleteExpense(
             @PathVariable UUID expenseId,
             @AuthenticationPrincipal JWTUserData user
     ) {
@@ -74,6 +76,43 @@ public class ExpenseController {
         expenseService.delete(expenseId, user.userId());
         return ResponseEntity.ok(
                 new ApiResponse<>(true, "Expense deleted successfully", null)
+        );
+    }
+
+    @PostMapping("/installments")
+    public ResponseEntity<ApiResponse<InstallmentExpenseResponseDTO>> createInstallment(
+            @RequestBody InstallmentExpenseRequestDTO dto,
+            @AuthenticationPrincipal JWTUserData user
+    ) {
+
+        InstallmentExpenseResponseDTO installments = expenseService.createInstallments(dto, user.userId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                new ApiResponse<>(true, "Installments created successfully", installments)
+        );
+    }
+
+    @PatchMapping("/installments/{groupId}")
+    public ResponseEntity<ApiResponse<InstallmentExpenseResponseDTO>> updateInstallments(
+            @PathVariable UUID groupId,
+            @RequestBody InstallmentExpenseRequestDTO dto,
+            @AuthenticationPrincipal JWTUserData user
+    ) {
+
+        InstallmentExpenseResponseDTO updatedInstallments = expenseService.updateInstallments(groupId, dto, user.userId());
+        return ResponseEntity.ok(
+                new ApiResponse<>(true, "Installments updated successfully", updatedInstallments)
+        );
+    }
+
+    @DeleteMapping("/installments/{groupId}")
+    public ResponseEntity<ApiResponse<Void>> deleteInstallments(
+            @PathVariable UUID groupId,
+            @AuthenticationPrincipal JWTUserData user
+    ) {
+
+        expenseService.deleteInstallmentGroup(groupId, user.userId());
+        return ResponseEntity.ok(
+                new ApiResponse<>(true, "Installments deleted successfully", null)
         );
     }
 }

@@ -61,7 +61,7 @@ public class CategoryController {
     }
 
     @DeleteMapping("/{categoryId}")
-    public ResponseEntity<ApiResponse<Category>> deleteCategory(
+    public ResponseEntity<ApiResponse<Void>> deleteCategory(
             @PathVariable UUID categoryId,
             @AuthenticationPrincipal JWTUserData user
     ) {
