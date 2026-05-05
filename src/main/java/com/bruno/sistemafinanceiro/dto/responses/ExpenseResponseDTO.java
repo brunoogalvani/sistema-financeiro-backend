@@ -9,6 +9,9 @@ public record ExpenseResponseDTO(
         String name,
         BigDecimal price,
         String categoryName,
-        LocalDate date
+        LocalDate date,
+        UUID installmentGroupId,
+        Integer installmentNumber,
+        Integer totalInstallments
 ) {
 }

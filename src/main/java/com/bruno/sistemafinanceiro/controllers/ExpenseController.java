@@ -8,6 +8,7 @@ import com.bruno.sistemafinanceiro.dto.requests.InstallmentExpenseRequestDTO;
 import com.bruno.sistemafinanceiro.dto.responses.ExpenseResponseDTO;
 import com.bruno.sistemafinanceiro.dto.responses.InstallmentExpenseResponseDTO;
 import com.bruno.sistemafinanceiro.services.ExpenseService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,18 +26,28 @@ public class ExpenseController {
     private final ExpenseService expenseService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<ExpenseResponseDTO>>> getExpenses(@AuthenticationPrincipal JWTUserData user) {
+    public ResponseEntity<ApiResponse<List<ExpenseResponseDTO>>> getExpenses(
+            @RequestParam(required = false) String month,
+            @AuthenticationPrincipal JWTUserData user
+    ) {
 
-        List<ExpenseResponseDTO> expenses = expenseService.findByUser(user.userId());
+        List<ExpenseResponseDTO> expenses;
+
+        if (month != null) {
+            expenses = expenseService.findByMonthAndUser(month, user.userId());
+        } else {
+            expenses = expenseService.findByUser(user.userId());
+        }
+
         return ResponseEntity.ok(
                 new ApiResponse<>(true, "Expenses retrieved successfully", expenses)
         );
     }
 
     @GetMapping("/months")
-    public ResponseEntity<ApiResponse<List<YearMonthDTO>>> getAvailableMonths(@AuthenticationPrincipal JWTUserData user) {
+    public ResponseEntity<ApiResponse<List<String>>> getAvailableMonths(@AuthenticationPrincipal JWTUserData user) {
 
-        List<YearMonthDTO> months = expenseService.findAvailableMonths(user.userId());
+        List<String> months = expenseService.findAvailableMonths(user.userId());
         return ResponseEntity.ok(
                 new ApiResponse<>(true, "Months retrieved successfully", months)
         );
@@ -81,7 +92,7 @@ public class ExpenseController {
 
     @PostMapping("/installments")
     public ResponseEntity<ApiResponse<InstallmentExpenseResponseDTO>> createInstallment(
-            @RequestBody InstallmentExpenseRequestDTO dto,
+            @Valid @RequestBody InstallmentExpenseRequestDTO dto,
             @AuthenticationPrincipal JWTUserData user
     ) {
 
@@ -94,7 +105,7 @@ public class ExpenseController {
     @PatchMapping("/installments/{groupId}")
     public ResponseEntity<ApiResponse<InstallmentExpenseResponseDTO>> updateInstallments(
             @PathVariable UUID groupId,
-            @RequestBody InstallmentExpenseRequestDTO dto,
+            @Valid @RequestBody InstallmentExpenseRequestDTO dto,
             @AuthenticationPrincipal JWTUserData user
     ) {
 

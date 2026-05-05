@@ -1,5 +1,6 @@
 package com.bruno.sistemafinanceiro.services;
 
+import com.bruno.sistemafinanceiro.commons.exceptions.BadRequestException;
 import com.bruno.sistemafinanceiro.commons.exceptions.ResourceNotFoundException;
 import com.bruno.sistemafinanceiro.dto.requests.ExpenseRequestDTO;
 import com.bruno.sistemafinanceiro.dto.YearMonthDTO;
@@ -17,6 +18,9 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -36,14 +40,30 @@ public class ExpenseService {
                 .toList();
     }
 
-    public List<YearMonthDTO> findAvailableMonths(UUID userId) {
+    public List<String> findAvailableMonths(UUID userId) {
 
         return expenseRepository.findAvailableMonths(userId)
                 .stream()
-                .map(obj -> new YearMonthDTO(
-                        (Integer) obj[0],
-                        (Integer) obj[1]
-                ))
+                .map(m -> m.year() + "-" + String.format("%02d", m.month()))
+                .toList();
+    }
+
+    public List<ExpenseResponseDTO> findByMonthAndUser(String month, UUID userId) {
+
+        YearMonth yearMonth;
+
+        try {
+            yearMonth = YearMonth.parse(month);
+        } catch (DateTimeParseException e) {
+            throw new BadRequestException("Invalid month format. Use YYYY-MM");
+        }
+
+        LocalDate start = yearMonth.atDay(1);
+        LocalDate end = yearMonth.atEndOfMonth();
+
+        return expenseRepository.findByMonthAndUserId(start, end, userId)
+                .stream()
+                .map(this::toResponseDTO)
                 .toList();
     }
 
@@ -168,6 +188,15 @@ public class ExpenseService {
 
         String categoryName = expense.getCategory().getName();
 
-        return new ExpenseResponseDTO(expense.getId(), expense.getName(), expense.getPrice(), categoryName, expense.getDate());
+        return new ExpenseResponseDTO(
+                expense.getId(),
+                expense.getName(),
+                expense.getPrice(),
+                categoryName,
+                expense.getDate(),
+                expense.getInstallmentGroupId(),
+                expense.getInstallmentNumber(),
+                expense.getTotalInstallments()
+        );
     }
 }
