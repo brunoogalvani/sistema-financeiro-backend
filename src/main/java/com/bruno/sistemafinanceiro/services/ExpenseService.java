@@ -2,6 +2,7 @@ package com.bruno.sistemafinanceiro.services;
 
 import com.bruno.sistemafinanceiro.commons.exceptions.ResourceNotFoundException;
 import com.bruno.sistemafinanceiro.dto.requests.ExpenseRequestDTO;
+import com.bruno.sistemafinanceiro.dto.YearMonthDTO;
 import com.bruno.sistemafinanceiro.dto.responses.ExpenseResponseDTO;
 import com.bruno.sistemafinanceiro.entities.Category;
 import com.bruno.sistemafinanceiro.entities.Expense;
@@ -27,6 +28,17 @@ public class ExpenseService {
         return expenseRepository.findByUserId(userId)
                 .stream()
                 .map(this::toResponseDTO)
+                .toList();
+    }
+
+    public List<YearMonthDTO> findAvailableMonths(UUID userId) {
+
+        return expenseRepository.findAvailableMonths(userId)
+                .stream()
+                .map(obj -> new YearMonthDTO(
+                        (Integer) obj[0],
+                        (Integer) obj[1]
+                ))
                 .toList();
     }
 
