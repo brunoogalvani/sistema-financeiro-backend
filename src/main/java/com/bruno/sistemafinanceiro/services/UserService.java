@@ -72,7 +72,7 @@ public class UserService {
         userRepository.save(user);
     }
 
-    private UserResponseDTO toResponseDTO(User dto) {
-        return new UserResponseDTO(dto.getId(), dto.getName(), dto.getUsername(), dto.getRole());
+    private UserResponseDTO toResponseDTO(User user) {
+        return new UserResponseDTO(user.getId(), user.getName(), user.getUsername(), user.getRole());
     }
 }

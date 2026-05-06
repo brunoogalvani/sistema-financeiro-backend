@@ -25,6 +25,23 @@ public class CategoryService {
         return categoryRepository.findByUserId(userId);
     }
 
+    public void createDefaultCategories(User user) {
+
+        List<String> defaultCategories = List.of(
+                "Alimentação",
+                "Transporte",
+                "Moradia",
+                "Lazer"
+        );
+
+        defaultCategories.forEach(name -> {
+            Category c = new Category();
+            c.setName(name);
+            c.setUser(user);
+            categoryRepository.save(c);
+        });
+    }
+
     public Category create(String name, UUID userId) {
 
         if (categoryRepository.existsByNameIgnoreCaseAndUserId(name.trim(), userId)) throw new ConflictException("Category already exists");
