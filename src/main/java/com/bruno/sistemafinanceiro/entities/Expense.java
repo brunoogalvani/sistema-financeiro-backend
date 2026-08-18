@@ -33,7 +33,7 @@ public class Expense {
 
     @Setter
     @ManyToOne
-    @JoinColumn(name = "category_id", nullable = false)
+    @JoinColumn(name = "category_id", nullable = true)
     private Category category;
 
     @Setter

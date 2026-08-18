@@ -1,6 +1,5 @@
 package com.bruno.sistemafinanceiro.services;
 
-import com.bruno.sistemafinanceiro.commons.exceptions.BadRequestException;
 import com.bruno.sistemafinanceiro.commons.exceptions.ResourceNotFoundException;
 import com.bruno.sistemafinanceiro.dto.requests.IncomeRequestDTO;
 import com.bruno.sistemafinanceiro.dto.responses.IncomeResponseDTO;
@@ -60,10 +59,6 @@ public class IncomeService {
         Income currentIncome = incomeRepository
                 .findIncomeByDateAndUserId(dto.startDate(), userId)
                 .orElse(null);
-
-        if (dto.startDate().isAfter(LocalDate.now(ZoneId.of("America/Sao_Paulo")).plusYears(1))) {
-            throw new BadRequestException("Invalid start date");
-        }
 
         if (currentIncome != null) {
             currentIncome.setEndDate(dto.startDate().minusDays(1));
