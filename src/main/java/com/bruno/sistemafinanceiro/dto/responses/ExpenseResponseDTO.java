@@ -12,6 +12,7 @@ public record ExpenseResponseDTO(
         LocalDate date,
         UUID installmentGroupId,
         Integer installmentNumber,
-        Integer totalInstallments
+        Integer totalInstallments,
+        BigDecimal installmentTotalPrice
 ) {
 }

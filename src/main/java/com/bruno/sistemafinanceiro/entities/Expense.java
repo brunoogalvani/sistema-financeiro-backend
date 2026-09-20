@@ -50,4 +50,8 @@ public class Expense {
     @Setter
     @Column(nullable = true)
     private Integer totalInstallments;
+
+    @Setter
+    @Column(precision = 10, scale = 2, nullable = true)
+    private BigDecimal installmentTotalPrice;
 }

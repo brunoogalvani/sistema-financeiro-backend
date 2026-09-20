@@ -13,6 +13,7 @@ import com.bruno.sistemafinanceiro.entities.User;
 import com.bruno.sistemafinanceiro.repositories.CategoryRepository;
 import com.bruno.sistemafinanceiro.repositories.ExpenseRepository;
 import com.bruno.sistemafinanceiro.repositories.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -116,6 +117,7 @@ public class ExpenseService {
             expense.setInstallmentGroupId(groupId);
             expense.setTotalInstallments(installments);
             expense.setInstallmentNumber(i + 1);
+            expense.setInstallmentTotalPrice(total);
 
             if (i == installments - 1) {
                 expense.setPrice(total.subtract(accumulated));
@@ -141,24 +143,46 @@ public class ExpenseService {
         );
     }
 
+    @Transactional
     public ExpenseResponseDTO update(UUID expenseId, ExpenseRequestDTO dto, UUID userId) {
 
         Expense expense = expenseRepository.findByIdAndUserId(expenseId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Expense not found"));
 
+        List<Expense> installments = null;
+
+        if (expense.getInstallmentGroupId() != null) {
+            installments = expenseRepository.findByInstallmentGroupIdAndUserId(expense.getInstallmentGroupId(), userId);
+        }
+
         if (dto.name() != null) expense.setName(dto.name());
+
         if (dto.price() != null) expense.setPrice(dto.price());
+
         if (dto.categoryId() != null) {
             Category category = categoryRepository.findByIdAndUserId(dto.categoryId(), userId)
                     .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
             expense.setCategory(category);
         }
-        if(dto.date() != null) expense.setDate(dto.date());
 
-        Expense updated = expenseRepository.save(expense);
+        if (dto.date() != null) expense.setDate(dto.date());
 
-        return toResponseDTO(updated);
+        if (installments != null && dto.price() != null) {
+            BigDecimal totalPrice = installments.stream()
+                    .map(Expense::getPrice)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            for (Expense installment : installments) {
+                installment.setInstallmentTotalPrice(totalPrice);
+            }
+
+            expenseRepository.saveAll(installments);
+        } else {
+            expenseRepository.save(expense);
+        }
+
+        return toResponseDTO(expense);
     }
 
     public InstallmentExpenseResponseDTO updateInstallments(UUID groupId, InstallmentExpenseRequestDTO dto, UUID userId) {
@@ -196,7 +220,8 @@ public class ExpenseService {
                 expense.getDate(),
                 expense.getInstallmentGroupId(),
                 expense.getInstallmentNumber(),
-                expense.getTotalInstallments()
+                expense.getTotalInstallments(),
+                expense.getInstallmentTotalPrice()
         );
     }
 }
