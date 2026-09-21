@@ -2,7 +2,6 @@ package com.bruno.sistemafinanceiro.services;
 
 import com.bruno.sistemafinanceiro.commons.exceptions.ResourceNotFoundException;
 import com.bruno.sistemafinanceiro.dto.requests.IncomeRequestDTO;
-import com.bruno.sistemafinanceiro.dto.requests.RegisterUserRequestDTO;
 import com.bruno.sistemafinanceiro.dto.responses.IncomeResponseDTO;
 import com.bruno.sistemafinanceiro.entities.Income;
 import com.bruno.sistemafinanceiro.entities.User;
@@ -16,7 +15,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -46,7 +44,7 @@ class IncomeServiceTest {
     }
 
     @Test
-    @DisplayName("Should return current income")
+    @DisplayName("Should return a list of current incomes")
     void getCurrentCase1() {
         UUID userId = UUID.randomUUID();
         User user = new User();
@@ -58,22 +56,23 @@ class IncomeServiceTest {
         income.setAmount(new BigDecimal(3125));
         income.setStartDate(LocalDate.of(2026, 8, 1));
 
-        when(incomeRepository.findIncomeByDateAndUserId(LocalDate.now(ZoneId.of("America/Sao_Paulo")), userId)).thenReturn(Optional.of(income));
+        when(incomeRepository.findIncomeByDateAndUserId(LocalDate.now(ZoneId.of("America/Sao_Paulo")), userId)).thenReturn(List.of(income));
 
-        IncomeResponseDTO result = incomeService.getCurrent(userId);
+        List<IncomeResponseDTO> result = incomeService.getCurrent(userId);
 
         assertNotNull(result);
-        assertEquals(income.getAmount(), result.amount());
-        assertEquals(income.getStartDate(), result.startDate());
-        assertEquals(income.getEndDate(), result.endDate());
+        assertEquals(1, result.size());
+        assertEquals(income.getAmount(), result.getFirst().amount());
+        assertEquals(income.getStartDate(), result.getFirst().startDate());
+        assertEquals(income.getEndDate(), result.getFirst().endDate());
     }
 
     @Test
-    @DisplayName("Should not return current income")
+    @DisplayName("Should not return a list of current incomes")
     void getCurrentCase2() {
         UUID userId = UUID.randomUUID();
 
-        when(incomeRepository.findIncomeByDateAndUserId(LocalDate.now(ZoneId.of("America/Sao_Paulo")), userId)).thenReturn(Optional.empty());
+        when(incomeRepository.findIncomeByDateAndUserId(LocalDate.now(ZoneId.of("America/Sao_Paulo")), userId)).thenReturn(List.of());
 
         ResourceNotFoundException thrown = assertThrows(ResourceNotFoundException.class, () -> incomeService.getCurrent(userId));
         assertEquals("Current income not found", thrown.getMessage());
@@ -165,7 +164,7 @@ class IncomeServiceTest {
         IncomeRequestDTO dto = new IncomeRequestDTO(new BigDecimal(3125), LocalDate.of(2026, 8, 1));
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(incomeRepository.findIncomeByDateAndUserId(dto.startDate(), userId)).thenReturn(Optional.empty());
+        when(incomeRepository.findIncomeByDateAndUserId(dto.startDate(), userId)).thenReturn(List.of());
         when(incomeRepository.save(any(Income.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         IncomeResponseDTO result = incomeService.create(dto, userId);
@@ -178,47 +177,8 @@ class IncomeServiceTest {
     }
 
     @Test
-    @DisplayName("Should close current income and create new income")
-    void createCase2() {
-        UUID userId = UUID.randomUUID();
-        User user = new User();
-        user.setName("Bruno");
-        user.setRole(UserRole.USER);
-
-        BigDecimal newAmount = new BigDecimal(4000);
-        BigDecimal currentAmount = new BigDecimal(3125);
-
-        IncomeRequestDTO dto = new IncomeRequestDTO(newAmount, LocalDate.of(2026, 8, 1));
-
-        Income currentIncome = new Income();
-        currentIncome.setUser(user);
-        currentIncome.setAmount(currentAmount);
-        currentIncome.setStartDate(LocalDate.of(2026, 1, 1));
-
-        Income newIncome = new Income();
-        newIncome.setUser(user);
-        newIncome.setAmount(dto.amount());
-        newIncome.setStartDate(dto.startDate());
-
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(incomeRepository.findIncomeByDateAndUserId(dto.startDate(), userId)).thenReturn(Optional.of(currentIncome));
-
-        incomeService.create(dto, userId);
-
-        ArgumentCaptor<Income> captor = ArgumentCaptor.forClass(Income.class);
-
-        verify(incomeRepository, times(2)).save(captor.capture());
-
-        List<Income> savedIncomes = captor.getAllValues();
-
-        assertEquals(dto.startDate().minusDays(1), currentIncome.getEndDate());
-        assertEquals(currentAmount, savedIncomes.get(0).getAmount());
-        assertEquals(newAmount, savedIncomes.get(1).getAmount());
-    }
-
-    @Test
     @DisplayName("Should not create income when user doesn't exist")
-    void createCase3() {
+    void createCase2() {
         UUID userId = UUID.randomUUID();
 
         IncomeRequestDTO dto = new IncomeRequestDTO(new BigDecimal(4000), LocalDate.of(2026, 8, 1));

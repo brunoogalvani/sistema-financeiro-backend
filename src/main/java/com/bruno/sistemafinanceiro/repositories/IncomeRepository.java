@@ -19,7 +19,9 @@ public interface IncomeRepository extends JpaRepository<Income, UUID> {
         AND i.startDate <= :date
         AND (i.endDate IS NULL OR i.endDate >= :date)
     """)
-    Optional<Income> findIncomeByDateAndUserId(LocalDate date, UUID userId);
+    List<Income> findIncomeByDateAndUserId(LocalDate date, UUID userId);
 
     List<Income> findAllByUserIdOrderByStartDateDesc(UUID userId);
+
+    Optional<Income> findByIdAndUserId(UUID incomeId, UUID userId);
 }

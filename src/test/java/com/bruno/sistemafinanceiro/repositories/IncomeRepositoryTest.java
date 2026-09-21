@@ -10,7 +10,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Optional;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -25,18 +25,18 @@ class IncomeRepositoryTest {
     private UserRepository userRepository;
 
     @Test
-    @DisplayName("Should get actual income of user")
+    @DisplayName("Should get a list of actual incomes of user")
     void findIncomeByDateAndUserIdCase1() {
         User user = new User();
         user = userRepository.save(user);
 
         Income income = createIncome(user, new BigDecimal(2000), 7, 1);
 
-        Optional<Income> result = incomeRepository.findIncomeByDateAndUserId(LocalDate.of(2026, 8, 15), user.getId());
+        List<Income> result = incomeRepository.findIncomeByDateAndUserId(LocalDate.of(2026, 8, 15), user.getId());
 
-        assertTrue(result.isPresent());
-        assertEquals(income.getId(), result.get().getId());
-        assertEquals(income.getAmount(), result.get().getAmount());
+        assertNotNull(result);
+        assertEquals(income.getId(), result.getFirst().getId());
+        assertEquals(income.getAmount(), result.getFirst().getAmount());
     }
 
     @Test
@@ -47,7 +47,7 @@ class IncomeRepositoryTest {
 
         createIncome(user, new BigDecimal(2000), 5, 1, 8, 14);
 
-        Optional<Income> result = incomeRepository.findIncomeByDateAndUserId(LocalDate.of(2026, 8, 15), user.getId());
+        List<Income> result = incomeRepository.findIncomeByDateAndUserId(LocalDate.of(2026, 8, 15), user.getId());
 
         assertTrue(result.isEmpty());
     }
@@ -60,7 +60,7 @@ class IncomeRepositoryTest {
 
         createIncome(user, new BigDecimal(2000), 8, 30);
 
-        Optional<Income> result = incomeRepository.findIncomeByDateAndUserId(LocalDate.of(2026, 8, 15), user.getId());
+        List<Income> result = incomeRepository.findIncomeByDateAndUserId(LocalDate.of(2026, 8, 15), user.getId());
 
         assertTrue(result.isEmpty());
     }
@@ -76,7 +76,7 @@ class IncomeRepositoryTest {
 
         createIncome(user1, new BigDecimal(2000), 8, 1);
 
-        Optional<Income> result = incomeRepository.findIncomeByDateAndUserId(LocalDate.of(2026, 8, 15), user2.getId());
+        List<Income> result = incomeRepository.findIncomeByDateAndUserId(LocalDate.of(2026, 8, 15), user2.getId());
 
         assertTrue(result.isEmpty());
     }
